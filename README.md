@@ -7,7 +7,7 @@
 │   ├── consumer/            # Kafka Consumer Entry Point
 │   ├── publisher/           # Kafka Publisher Entry Point
 │   ├── migrate/             # Database Migration Runner
-│   └── worker/              # Background Workers
+│   └── job/                 # Background Jobs
 │
 ├── config/
 │   ├── config.yaml          # Main Configuration File
