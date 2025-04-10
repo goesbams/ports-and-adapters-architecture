@@ -1,4 +1,36 @@
 # Port And Adapter Architecture
+## Overview
+Port and adapter architecture or well-known as **Hexagonal Architecture** is firstly introduced by **Alistair Cockburn** in 2005. The main idea is  decoupling an application's core business logic from external systems (e.g., databases, UIs, APIs) by organizing code into ports (interfaces) and adapters (implementations). In Go, this is achieved using interfaces, dependency injection, and a clean separation of concerns.
+
+## Key Components in Go
+
+| Component           | Description                                                                 | Go Example                              |
+|---------------------|-----------------------------------------------------------------------------|-----------------------------------------|
+| **Core Domain**     | Business logic, entities, and rules (independent of external systems).      | Structs, methods in `internal/core`     |
+| **Ports**           | Interfaces defining how the core interacts with the outside world.          | `UserRepository` interface              |
+| **Primary Adapters**| Handle input (e.g., HTTP handlers, CLI commands).                           | HTTP handlers in `adapters/primary`     |
+| **Secondary Adapters**| Handle output (e.g., databases, external APIs).                           | PostgreSQL implementation in `adapters/secondary` |
+
+## Core Principles in Go
+1. Decouple Logic from Infrastructure**
+    - The core domain never directly depends on frameworks, databases, or UI.
+    - External dependencies (e.g., PostgreSQL, HTTP servers) implement interfaces defined by the core.
+
+2. **Ports (Interfaces)**
+    - **Inbound Ports:** Define how external actors (e.g., users, APIs) interact with the core.
+    - **Outbound Ports:** Define how the core interacts with external services (e.g., databases).
+
+3. **Adapters (Implementations)**
+    - **Primary Adapters:** Convert external input (e.g., HTTP requests) into core method calls.
+    - **Secondary Adapters:** Implement outbound ports for specific technologies (e.g., PostgreSQL, Redis).
+
+## Benefit in Go
+- **Testability:** Mock adapters (e.g., in-memory databases) simplify unit testing.
+- **Flexibility:** Swap databases, UIs, or APIs without changing core logic.
+- **Clear Separation:** Business logic remains untouched by infrastructure changes.
+
+
+## Project Structure
 
 ```plaintext
 ├── cmd/
@@ -16,7 +48,7 @@
 │   ├── config.prod.yaml     # Production Config
 │
 ├── internal/
-│   ├── domain/              # Business Models & Rules
+│   ├── domain/              # Business Models & Rules (Core)
 │   │   ├── wallet.go        # Wallet Entity & Methods
 │   │   ├── transaction.go   # Transaction Entity & Methods
 │   │   ├── user.go          # User Entity
