@@ -66,3 +66,48 @@
 ├── go.mod                 # Go Module Definition
 └── main.go                # Main Application Entry Point
 ```
+
+# ERD
+```mermaid
+erDiagram
+  USER {
+      uuid user_id PK "Unique user identifier"
+      string name "User full name"
+      string email "User email"
+      string phone "User contact number"
+      datetime created_at
+      datetime updated_at
+  }
+  WALLET {
+      uuid wallet_id PK "Unique wallet identifier"
+      uuid user_id FK "Owner of the wallet"
+      int balance "Balance in smallest unit (e.g., cents)"
+      string currency "Currency code (e.g., USD, IDR)"
+      datetime created_at
+      datetime updated_at
+  }
+  TRANSACTION {
+      uuid transaction_id PK "Unique transaction identifier"
+      uuid wallet_id FK "Affected wallet"
+      string type "Transaction type (deposit, withdrawal, etc.)"
+      int amount "Transaction amount"
+      string status "Status (pending, completed, failed)"
+      string description "Transaction notes"
+      datetime created_at
+      datetime updated_at
+  }
+  PAYMENT {
+      uuid payment_id PK "Unique payment identifier"
+      uuid transaction_id FK "Associated transaction"
+      string gateway "Payment gateway (Midtrans, Doku, Stripe)"
+      string external_reference "External reference ID"
+      string status "Payment status"
+      string details "Additional payment details"
+      datetime created_at
+      datetime updated_at
+  }
+
+  USER ||--|| WALLET : "has"
+  WALLET ||--o{ TRANSACTION : "records"
+  TRANSACTION ||--|| PAYMENT : "may have"
+```
