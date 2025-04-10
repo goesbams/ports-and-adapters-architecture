@@ -110,5 +110,4 @@ Table Payments as P {
   created_at datetime [not null, default: `now()`]
   updated_at datetime [not null, default: `now()`]
 }
-}
 ```
