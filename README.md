@@ -2,6 +2,8 @@
 ## Overview
 Port and adapter architecture or well-known as **Hexagonal Architecture** is firstly introduced by **Alistair Cockburn** in 2005. The main idea is  decoupling an application's core business logic from external systems (e.g., databases, UIs, APIs) by organizing code into ports (interfaces) and adapters (implementations). In Go, this is achieved using interfaces, dependency injection, and a clean separation of concerns.
 
+![Hexagonal Architecture Concept](documentations/hexagonal_architecture_concept.png)
+
 ## Key Components in Go
 
 | Component           | Description                                                                 | Go Example                              |
@@ -143,3 +145,8 @@ Table Payments as P {
   updated_at datetime [not null, default: `now()`]
 }
 ```
+
+## References
+- [Netflix TechBlog: Ready for Changes with Hexagonal Architecture](https://netflixtechblog.com/ready-for-changes-with-hexagonal-architecture-b315ec967749)
+- [Hexagonal Architecture: There are Always Two Sides to Every Story](https://medium.com/ssense-tech/hexagonal-architecture-there-are-always-two-sides-to-every-story-bc0780ed7d9c)
+- [Why Clean Architecture Struggles in Golang and What Works Better](https://dev.to/lucasdeataides/why-clean-architecture-struggles-in-golang-and-what-works-better-m4g)
