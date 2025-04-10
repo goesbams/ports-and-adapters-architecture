@@ -68,46 +68,47 @@
 ```
 
 # ERD
-```mermaid
-erDiagram
-  USER {
-      uuid user_id PK "Unique user identifier"
-      string name "User full name"
-      string email "User email"
-      string phone "User contact number"
-      datetime created_at
-      datetime updated_at
-  }
-  WALLET {
-      uuid wallet_id PK "Unique wallet identifier"
-      uuid user_id FK "Owner of the wallet"
-      int balance "Balance in smallest unit (e.g., cents)"
-      string currency "Currency code (e.g., USD, IDR)"
-      datetime created_at
-      datetime updated_at
-  }
-  TRANSACTION {
-      uuid transaction_id PK "Unique transaction identifier"
-      uuid wallet_id FK "Affected wallet"
-      string type "Transaction type (deposit, withdrawal, etc.)"
-      int amount "Transaction amount"
-      string status "Status (pending, completed, failed)"
-      string description "Transaction notes"
-      datetime created_at
-      datetime updated_at
-  }
-  PAYMENT {
-      uuid payment_id PK "Unique payment identifier"
-      uuid transaction_id FK "Associated transaction"
-      string gateway "Payment gateway (Midtrans, Doku, Stripe)"
-      string external_reference "External reference ID"
-      string status "Payment status"
-      string details "Additional payment details"
-      datetime created_at
-      datetime updated_at
-  }
+```sql
+Table users as U {
+  id int [pk, increment, not null]
+  fullname varchar [not null]
+  email varchar [unique, not null]
+  phone varchar [unique, not null]
+  status varchar
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null, default: `now()`]
+}
 
-  USER ||--|| WALLET : "has"
-  WALLET ||--o{ TRANSACTION : "records"
-  TRANSACTION ||--|| PAYMENT : "may have"
+Table wallets as W {
+  id int [pk, increment, not null]
+  user_id int [Ref: - U.id, not null]
+  balance int [not null, default: 0]
+  currency_code varchar [not null]
+  description varchar [null, note: 'optional notes']
+  status varchar
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null, default: `now()`]
+}
+
+Table Transactions as T {
+  id int [pk, increment, not null]
+  wallet_id int [Ref: > W.id, not null]
+  type varchar [not null, note: 'Transaction Type (deposit, withdrawal, transfer)']
+  amount int [not null]
+  status varchar [not null, note: 'pending, completed, failed']
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null, default: `now()`]
+}
+
+Table Payments as P {
+  id int [pk, increment, not null]
+  transaction_id int [Ref: - T.id, not null]
+  gateway int [not null, note: 'Payment gateway (Midtrans, Doku, Stripe)']
+  external_reference varchar [note: 'External reference ID']
+  details json [null, note: 'extra info from gateway']
+  status varchar
+  created_at datetime [not null, default: `now()`]
+  updated_at datetime [not null, default: `now()`]
+}
+}
 ```

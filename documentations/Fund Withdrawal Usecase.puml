@@ -1,0 +1,11 @@
+@startuml
+  participant user
+  participant mini_ewallet
+  participant payment_gateway
+
+  user->>mini_ewallet: Initiates withdrawal request
+  mini_ewallet->>mini_ewallet: Validate available balance
+  mini_ewallet->>payment_gateway: Request fund withdrawal
+  payment_gateway-->>mini_ewallet: Withdrawal successful
+  mini_ewallet-->>user: Confirms withdrawal and updates balance
+@enduml

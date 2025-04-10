@@ -1,0 +1,13 @@
+@startuml
+  participant user
+  participant mini_ewallet
+  participant payment_gateway
+  participant bank_api
+
+  user->>mini_ewallet: Initiates "Add Funds"
+  mini_ewallet->>payment_gateway: Request payment processing
+  payment_gateway->>bank_api: Initiates fund transfer
+  bank_api-->>payment_gateway: Confirms transfer
+  payment_gateway-->>mini_ewallet: Payment successful
+  mini_ewallet-->>user: Updates wallet balance
+@enduml

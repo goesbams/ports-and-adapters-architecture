@@ -1,0 +1,12 @@
+@startuml
+  participant sender
+  participant mini_ewallet
+  participant receiver
+
+  sender->>mini_ewallet: Initiates transfer to receiver
+  mini_ewallet->>mini_ewallet: Validates sender balance
+  mini_ewallet->>mini_ewallet: Deducts amount from sender
+  mini_ewallet->>mini_ewallet: Credits amount to receiver
+  mini_ewallet-->>sender: Transfer successful
+  mini_ewallet-->>receiver: Notification of received funds
+@enduml
