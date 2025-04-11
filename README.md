@@ -8,7 +8,7 @@ Port and adapter architecture or well-known as **Hexagonal Architecture** is fir
 
 | Component           | Description                                                                 | Go Example                              |
 |---------------------|-----------------------------------------------------------------------------|-----------------------------------------|
-| **Core Domain**     | Business logic, entities, and rules (independent of external systems).      | Structs, methods in `internal/core`     |
+| **Core Domain**     | Business logic, entities, and rules (independent of external systems).      | Structs, methods in `internal/core` or `internal/domain`     |
 | **Ports**           | Interfaces defining how the core interacts with the outside world.          | `UserRepository` interface              |
 | **Primary Adapters**| Handle input (e.g., HTTP handlers, CLI commands).                           | HTTP handlers in `adapters/primary`     |
 | **Secondary Adapters**| Handle output (e.g., databases, external APIs).                           | PostgreSQL implementation in `adapters/secondary` |
