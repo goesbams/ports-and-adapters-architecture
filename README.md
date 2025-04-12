@@ -4,17 +4,8 @@ Port and adapter architecture or well-known as **Hexagonal Architecture** is fir
 
 ![Hexagonal Architecture Concept](documentations/hexagonal_architecture_concept.png)
 
-## Key Components in Go
-
-| Component           | Description                                                                 | Go Example                              |
-|---------------------|-----------------------------------------------------------------------------|-----------------------------------------|
-| **Core Domain**     | Business logic, entities, and rules (independent of external systems).      | Structs, methods in `internal/core` or `internal/domain`     |
-| **Ports**           | Interfaces defining how the core interacts with the outside world.          | `UserRepository` interface              |
-| **Primary Adapters**| Handle input (e.g., HTTP handlers, CLI commands).                           | HTTP handlers in `adapters/primary`     |
-| **Secondary Adapters**| Handle output (e.g., databases, external APIs).                           | PostgreSQL implementation in `adapters/secondary` |
-
 ## Core Principles in Go
-1. Decouple Logic from Infrastructure**
+1. **Decouple Logic from Infrastructure**
     - The core domain never directly depends on frameworks, databases, or UI.
     - External dependencies (e.g., PostgreSQL, HTTP servers) implement interfaces defined by the core.
 
@@ -33,75 +24,113 @@ Port and adapter architecture or well-known as **Hexagonal Architecture** is fir
 
 
 ## Project Structure
+Here is implementation of port and adapter (hexagonal architecture) on golang.
 
 ```plaintext
-├── cmd/
-│   ├── api/                 # HTTP Server Entry Point
-│   ├── grpc/                # gRPC Server Entry Point
-│   ├── consumer/            # Kafka Consumer Entry Point
-│   ├── publisher/           # Kafka Publisher Entry Point
-│   ├── migrate/             # Database Migration Runner
-│   └── job/                 # Background Jobs
+├── cmd/                                    #⚡Primary Adapters (Driving Side)
+│   ├── api/                                # Primary Adapter: HTTP entry (User Interface)
+│   ├── grpc/                               # Primary Adapter: gRPC entry (User Interface)
+│   ├── consumer/                           # Primary Adapter: Kafka message consumer
+│   ├── publisher/                          # Primary Adapter: Kafka message producer
+│   ├── migrate/                            # Infrastructure Tool: DB migrations
+│   └── job/                                # Primary Adapter: Cron job scheduler
 │
-├── config/
-│   ├── config.yaml          # Main Configuration File
-│   ├── config.local.yaml    # Local Overrides
-│   ├── config.dev.yaml      # Dev Environment Config
-│   ├── config.prod.yaml     # Production Config
+├── config/                                 #🔌Infrastructure
+│   ├── config.yaml                         # Main Configuration File
+│   ├── config.local.yaml                   # Local Overrides
+│   ├── config.dev.yaml                     # Dev Environment Config
+│   ├── config.prod.yaml                    # Production Environment Config
 │
 ├── internal/
-│   ├── domain/              # Business Models & Rules (Core)
-│   │   ├── wallet.go        # Wallet Entity & Methods
-│   │   ├── transaction.go   # Transaction Entity & Methods
-│   │   ├── user.go          # User Entity
+│   ├── domain/                             # 💎 Core Domain (Business Models, Rules, & Validation)
+│   │   ├── wallet.go                       # Wallet Entity & Methods
+│   │   ├── transaction.go                  # Transaction Entity & Methods
+│   │   ├── user.go                         # User Entity & Methods
 │   │
-│   ├── usecase/             # Application Logic
-│   │   ├── wallet_service.go  # Wallet Business Logic
-│   │   ├── payment_service.go # Third-Party Payment Logic
+│   ├── usecase/                            # ⚙️ Application Core (Orchestrates domain+ports & Business workflows)
+│   │   ├── wallet_service.go               # Wallet Logic
+│   │   ├── payment_service.go              # Third-Party Payment Logic
 │   │
-│   ├── ports/               # Interfaces for Adapters
-│   │   ├── wallet_repository.go  # DB Interface for Wallet
-│   │   ├── payment_gateway.go    # Interface for Midtrans, Doku, Stripe
-│   │   ├── event_publisher.go    # Kafka Producer Interface
-│   │   ├── event_consumer.go     # Kafka Consumer Interface
+│   ├── ports/                              # 🔗Ports (Abstract Interfaces for Adapters)
+│   │   ├── wallet_repository.go            # DB Interface for Wallet
+│   │   ├── payment_gateway.go              # Interface for Midtrans, Doku, Stripe
+│   │   ├── event_publisher.go              # Kafka Producer Interface
+│   │   ├── event_consumer.go               # Kafka Consumer Interface
 │   │
-│   ├── adapters/            # Implementations of Ports
-│   │   ├── postgres_wallet_repo.go  # PostgreSQL Adapter
-│   │   ├── redis_cache.go           # Redis Adapter
-│   │   ├── mongo_transaction_repo.go # MongoDB Adapter
-│   │   ├── kafka_publisher.go        # Kafka Producer
-│   │   ├── kafka_consumer.go         # Kafka Consumer
-│   │   ├── midtrans_gateway.go       # Midtrans Payment Adapter
-│   │   ├── doku_gateway.go           # Doku Payment Adapter
-│   │   ├── stripe_gateway.go         # Stripe Payment Adapter
+│   ├── adapters/                           #🔌 Secondary Adapters (Driven Side)
+│   │   ├── postgres_wallet_repo.go         # PostgreSQL Adapter Implementation
+│   │   ├── redis_cache.go                  # Redis Adapter Implementation
+│   │   ├── mongo_transaction_repo.go       # MongoDB Adapter Implementation
+│   │   ├── kafka_publisher.go              # Kafka Producer Implementation
+│   │   ├── kafka_consumer.go               # Kafka Consumer Impelementation
+│   │   ├── midtrans_gateway.go             # Midtrans Payment Adapter Implementation
+│   │   ├── doku_gateway.go                 # Doku Payment Adapter Implementation
+│   │   ├── stripe_gateway.go               # Stripe Payment Adapter Implementation
 │
-├── migrations/
+├── migrations/                             #🗄️Infrastructure (DB Schema Management)
 │   ├── 001_create_wallets.up.sql
 │   ├── 001_create_wallets.down.sql
 │   ├── 002_create_transactions.up.sql
-│   ├── 002_create_transactions.down.sql
+│   ├── 002_create_transactions.down.sql  
 │
-├── api/
+├── api/                                    #🖥️ User Interface Layer
 │   ├── rest/
 │   │   ├── handlers/
-│   │   │   ├── wallet_handler.go     # Wallet HTTP Handlers
-│   │   │   ├── transaction_handler.go # Transaction HTTP Handlers
-│   │   ├── routes.go                 # REST API Router
+│   │   │   ├── wallet_handler.go           # Wallet HTTP Handlers
+│   │   │   ├── transaction_handler.go      # Transaction HTTP Handlers
+│   │   ├── routes.go                       # REST API Router
 │   ├── grpc/
-│   │   ├── wallet_service.proto      # gRPC Definition
-│   │   ├── transaction_service.proto # gRPC Definition
+│   │   ├── wallet_service.proto            # gRPC Definition
+│   │   ├── transaction_service.proto       # gRPC Definition
 │
 ├── tests/
-│   ├── wallet_test.go      # Unit Test for Wallet Logic
-│   ├── transaction_test.go # Unit Test for Transactions
+│   ├── wallet_test.go                      # Unit Test for Wallet Logic
+│   ├── transaction_test.go                 # Unit Test for Transactions
 │
-├── docker-compose.yml     # Services for PostgreSQL, Redis, Kafka, etc.
-├── Makefile               # Useful Commands (build, test, run)
-├── go.mod                 # Go Module Definition
-└── main.go                # Main Application Entry Point
+├── docker-compose.yml                      # Services for PostgreSQL, Redis, Kafka, etc.
+├── Makefile                                # Useful Commands (build, test, run)
+└── go.mod                                  # Go Module Definition
 ```
 
-# ERD
+## Hexagonal Architecture Mapping 
+| Component              | Hexagonal Term       | Project Location                     | Key Characteristics                              |
+|------------------------|----------------------|--------------------------------------|--------------------------------------------------|
+| **Business Rules**     | Core Domain          | `internal/domain/`                   | Zero external dependencies                       |
+| **Application Workflow** | Application Core   | `internal/usecase/`                  | Orchestrates domain logic & port interactions    |
+| **Input Contracts**    | Driving Ports        | `internal/ports/event_consumer.go`   | Define how the system receives external input    |
+| **Output Contracts**   | Driven Ports         | `internal/ports/*_repository.go`     | Define how the system interacts with the world   |
+| **User Facing**        | Primary Adapters     | `cmd/api/`, `api/rest/handlers/`     | HTTP/gRPC/Kafka input handlers                   |
+| **Infrastructure**     | Secondary Adapters   | `internal/adapters/`                 | DBs, payment gateways, message brokers           |
+| **Configuration**      | Infrastructure       | `config/`                            | Environment-specific implementations            |
+
+### Notes:
+- **Driving Ports**: Act as input interfaces (e.g., `EventConsumer` for Kafka messages).  
+- **Driven Ports**: Act as output interfaces (e.g., `WalletRepository` for database operations).  
+- **Primary Adapters**: Entry points for user/system input (HTTP handlers, message consumers).  
+- **Secondary Adapters**: Implement Driven Ports to connect to external services (PostgreSQL, Stripe).  
+- **Core Domain**: Contains *pure business logic* with no dependencies on frameworks or tools.  
+
+## Driving & Driven Side Explanation
+1. **Driving Side (Left)**
+  - **Primary Adapters:** `cmd/` (HTTP/gRPC servers), `api/rest/handlers/`
+  - **Ports:** `ports/event_consumer.go` (input contracts)
+  - **Flow:** 
+    ```
+      HTTP Request → Primary Adapter (handler) → Application Core → Domain Driven Side (Right)
+    ```
+2. **Driven Side (Right)**
+  - **Secondary Adapters:** `adapters/postgres_wallet_repo.go`
+  - **Ports:** `ports/wallet_repository.go` (output contracts)
+  - **Flow:**
+  ```
+    Domain → Application Core → Driven Port → Secondary Adapter → PostgreSQL
+  ```
+
+## Component Relationships
+![Hexagonal Architecture Flow](documentations/hexagonal_architecture_flow.png)
+
+
+## ERD
 ```sql
 Table users as U {
   id int [pk, increment, not null]

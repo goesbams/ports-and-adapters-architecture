@@ -1,0 +1,16 @@
+graph LR
+  A[User Interface] -->|HTTP/gRPC| B(Primary Adapters)
+  B -->|Use| C[Application Core]
+  C -->|Implement| D[Driving Ports]
+  C -->|Depend On| E[Core Domain]
+  C -->|Call| F[Driven Ports]
+  F -->|Implemented By| G(Secondary Adapters)
+  G -->|Connect To| H[(Infrastructure)]
+  
+  style A fill:#4CAF50,stroke:#388E3C
+  style B fill:#2196F3,stroke:#1976D2
+  style C fill:#9C27B0,stroke:#6A1B9A
+  style D fill:#FF9800,stroke:#F57C00
+  style F fill:#FF9800,stroke:#F57C00
+  style G fill:#2196F3,stroke:#1976D2
+  style H fill:#607D8B,stroke:#455A64
