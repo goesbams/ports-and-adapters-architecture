@@ -129,8 +129,9 @@ Here is implementation of port and adapter (hexagonal architecture) on golang.
 ## Component Relationships
 ![Hexagonal Architecture Flow](documentations/hexagonal_architecture_flow.png)
 
+## Mini E-Wallet Project with Ports and Adapters (Hexagonal) Architecture Implementation
 
-## ERD
+### 1. ERD Design for Defining Data Models
 ```sql
 Table users as U {
   id int [pk, increment, not null]
@@ -174,6 +175,21 @@ Table Payments as P {
   updated_at datetime [not null, default: `now()`]
 }
 ```
+### 2. Mini E-Wallet Key Usecases
+Based on industry standards and common functionalities, the minimalized primary use cases include:
+
+  - **Wallet Management:** Enabling users to view and manage their wallet balances and transaction histories.
+  - **Adding Funds to Wallet:** Allowing users to deposit money into their wallets.  
+    ![Add Fund to Wallet](documentations/add_fund_to_wallet.png)
+  - **Transferring Funds:** Facilitating peer-to-peer transfers between users within the system.​
+    ![Transfer Fund to Users](documentations/transfer_fund_to_users.png)
+  - **Withdrawing Funds:** Permitting users to withdraw money from their wallets to external accounts.
+  ![Fund Withdrawal from Wallet](documentations/fund_withdrawal_from_wallet.png)
+
+### 3. Level 1 - Usecases Sequence Diagram
+- 
+
+###
 
 ## References
 - [Netflix TechBlog: Ready for Changes with Hexagonal Architecture](https://netflixtechblog.com/ready-for-changes-with-hexagonal-architecture-b315ec967749)
