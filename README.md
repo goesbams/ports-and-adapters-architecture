@@ -179,17 +179,13 @@ Table Payments as P {
 Based on industry standards and common functionalities, the minimalized primary use cases include:
 
   - **Wallet Management:** Enabling users to view and manage their wallet balances and transaction histories.
+  ![Get Fund Balance](documentations/get_fund_balance.png)
   - **Adding Funds to Wallet:** Allowing users to deposit money into their wallets.  
     ![Add Fund to Wallet](documentations/add_fund_to_wallet.png)
   - **Transferring Funds:** Facilitating peer-to-peer transfers between users within the system.​
     ![Transfer Fund to Users](documentations/transfer_fund_to_users.png)
   - **Withdrawing Funds:** Permitting users to withdraw money from their wallets to external accounts.
   ![Fund Withdrawal from Wallet](documentations/fund_withdrawal_from_wallet.png)
-
-### 3. Level 1 - Usecases Sequence Diagram
-- 
-
-###
 
 ## References
 - [Netflix TechBlog: Ready for Changes with Hexagonal Architecture](https://netflixtechblog.com/ready-for-changes-with-hexagonal-architecture-b315ec967749)

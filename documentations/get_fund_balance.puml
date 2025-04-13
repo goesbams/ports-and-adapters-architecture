@@ -1,0 +1,10 @@
+@startuml
+  participant user
+  participant mini_ewallet
+  participant payment_gateway
+
+  user->>mini_ewallet: Initiates Get fund balance request 
+  mini_ewallet->>payment_gateway: Request fund balance
+  payment_gateway-->>mini_ewallet: Get fund balance successful
+  mini_ewallet-->>user: Confirms latest fund balance
+@enduml
