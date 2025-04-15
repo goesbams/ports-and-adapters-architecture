@@ -44,3 +44,44 @@ func NewWallet(userID int, currencyCode, description string) *Wallet {
 		UpdatedAt:    now,
 	}
 }
+
+// Credit adds funds to wallet
+func (w *Wallet) Credit(amount int) error {
+	if amount <= 0 {
+		return ErrInvalidAmount
+	}
+
+	if w.Status != WalletStatusActive {
+		return ErrWalletNotActive
+	}
+
+	if w.Balance < amount {
+		return ErrInsufficientBalance
+	}
+
+	return nil
+}
+
+// Debit remove funds from wallet
+func (w *Wallet) Debit(amount int) error {
+	if amount <= 0 {
+		return ErrInvalidAmount
+	}
+
+	if w.Status != WalletStatusActive {
+		return ErrWalletNotActive
+	}
+
+	if w.Balance < amount {
+		return ErrInsufficientBalance
+	}
+
+	w.Balance -= amount
+	w.UpdatedAt = time.Now()
+
+	return nil
+}
+
+func (w *Wallet) IsActive() bool {
+	return w.Status == WalletStatusActive
+}
