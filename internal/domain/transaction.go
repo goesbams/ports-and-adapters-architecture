@@ -42,3 +42,27 @@ type Transaction struct {
 	UpdatedAt   time.Time         `json:"updated_at"`
 	CompletedAt *time.Time        `json:"completed_at,omitempty"`
 }
+
+// NewTransaction creates a new transaction
+func NewTransaction(walletID int, txType TransactionType, amount int, description string) (*Transaction, error) {
+	if amount <= 0 {
+		return nil, ErrInvalidTransactionAmount
+	}
+
+	// validate transaction type
+	if txType != TransactionTypeDeposit &&
+		txType != TransactionTypeWithdrawal &&
+		txType != TransactionTypeTransfer {
+		return nil, ErrInvalidTransactionType
+	}
+
+	now := time.Now()
+	return &Transaction{
+		WalletID:    walletID,
+		Type:        txType,
+		Amount:      amount,
+		Description: description,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}, nil
+}
