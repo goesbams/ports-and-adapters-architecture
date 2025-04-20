@@ -66,3 +66,51 @@ func NewTransaction(walletID int, txType TransactionType, amount int, descriptio
 		UpdatedAt:   now,
 	}, nil
 }
+
+// NewTransferTransaction creates a new transfer transaction
+func NewTransferTransaction(fromWalletId, ToWalletID int, amount int, description string) (*Transaction, error) {
+	if amount <= 0 {
+		return nil, ErrInvalidTransactionAmount
+	}
+
+	now := time.Now()
+	return &Transaction{
+		WalletID:    fromWalletId,
+		ToWalletID:  &ToWalletID,
+		Type:        TransactionTypeTransfer,
+		Amount:      amount,
+		Status:      TransactionStatusPending,
+		Description: description,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}, nil
+}
+
+// complete marks a transaction as completed
+func (t *Transaction) Complete() {
+	now := time.Now()
+	t.Status = TransactionStatusCompleted
+	t.CompletedAt = &now
+	t.UpdatedAt = now
+}
+
+// Fail marks a transaction as failed
+func (t *Transaction) Fail() {
+	t.Status = TransactionStatusFailed
+	t.UpdatedAt = time.Now()
+}
+
+// IsPending Checks if a transaction is pending
+func (t *Transaction) IsPending() bool {
+	return t.Status == TransactionStatusPending
+}
+
+// IsCompleted checks if a transaction is completed
+func (t *Transaction) IsCompleted() bool {
+	return t.Status == TransactionStatusCompleted
+}
+
+// IsFailed checks if a transaction is failed
+func (t *Transaction) IsFailed() bool {
+	return t.Status == TransactionStatusFailed
+}
