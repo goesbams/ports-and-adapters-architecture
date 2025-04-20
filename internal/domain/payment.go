@@ -103,3 +103,33 @@ func (p *Payment) Cancel() error {
 
 	return nil
 }
+
+// IsPending checks if a payment is pending
+func (p *Payment) IsPending() bool {
+	return p.Status == PaymentStatusPending
+}
+
+// IsCompleted checks if a payment is completed
+func (p *Payment) IsCompleted() bool {
+	return p.Status == PaymentStatusCompleted
+}
+
+// IsFailed checks if a payment is failed
+func (p *Payment) IsFailed() bool {
+	return p.Status == PaymentStatusFailed
+}
+
+// IsCancelled checks if a payment is cancelled
+func (p *Payment) IsCancelled() bool {
+	return p.Status == PaymentStatusCancelled
+}
+
+// SetExternalInfo sets external information for a payment
+func (p *Payment) SetExternalInfo(externalID, paymentURL string, details map[string]interface{}) {
+	p.ExternalID = externalID
+	p.PaymentURL = paymentURL
+	if details != nil {
+		p.Details = details
+	}
+	p.UpdatedAt = time.Now()
+}
