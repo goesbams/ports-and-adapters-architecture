@@ -19,6 +19,9 @@ type WalletRepository interface {
 	// UpdateBalance updates only the wallet balance
 	UpdateBalance(ctx context.Context, walletID int, newBalance int) error
 
+	// UpdateStatus updates only the wallet balance
+	UpdateStatus(ctx context.Context, walletID int, status domain.WalletStatus) error
+
 	// Delete removes a wallet
 	Delete(ctx context.Context, id int) error
 }
