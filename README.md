@@ -43,29 +43,57 @@ Here is implementation of port and adapter (hexagonal architecture) on golang.
 │
 ├── internal/
 │   ├── domain/                             # 💎 Core Domain (Business Models, Rules, & Validation)
-│   │   ├── wallet.go                       # Wallet Entity & Methods
-│   │   ├── transaction.go                  # Transaction Entity & Methods
-│   │   ├── user.go                         # User Entity & Methods
+│   │   ├── user.go                         # User entity & business rules
+│   │   ├── wallet.go                       # Wallet entity & business rules
+│   │   ├── transaction.go                  # Transaction entity & business rules
+│   │   └── payment.go                      # Payment entity & business rules
 │   │
 │   ├── usecase/                            # ⚙️ Application Core (Orchestrates domain+ports & Business workflows)
-│   │   ├── wallet_service.go               # Wallet Logic
-│   │   ├── payment_service.go              # Third-Party Payment Logic
+│   │    ├── wallet_service.go              # WalletService implementation
+│   │    ├── payment_service.go             # PaymentService implementation
+│   │    ├── transaction_service.go         # TransactionService implementation
+│   │    └── user_service.go                # UserService implementation
 │   │
 │   ├── ports/                              # 🔗Ports (Abstract Interfaces for Adapters)
-│   │   ├── wallet_repository.go            # DB Interface for Wallet
-│   │   ├── payment_gateway.go              # Interface for Midtrans, Doku, Stripe
-│   │   ├── event_publisher.go              # Kafka Producer Interface
-│   │   ├── event_consumer.go               # Kafka Consumer Interface
+│   │   ├── primary/                        # Primary (driving) ports
+│   │   │   ├── wallet_service.go           # Wallet service interface
+│   │   │   ├── payment_service.go          # Payment service interface
+│   │   │   ├── transaction_service.go      # Transaction service interface
+│   │   │   ├── user_service.go             # User service interface
+│   │   │   └── event_processor.go          # Event processor interface
+│   │   │
+│   │   └── secondary/                      # Secondary (driven) ports
+│   │       ├── persistence/                # Data persistence interfaces
+│   │       │   ├── wallet_repository.go
+│   │       │   ├── user_repository.go
+│   │       │   ├── transaction_repository.go
+│   │       │   └── payment_repository.go
+│   │       ├── external/                   # External services interfaces
+│   │       │   └── payment_gateway.go
+│   │       └── infrastructure/             # Infrastructure interfaces
+│   │           ├── cache.go
+│   │           ├── event_publisher.go
+│   │           ├── event_consumer.go
+│   │           ├── config.go
+│   │           └── logger.go
 │   │
 │   ├── adapters/                           #🔌 Secondary Adapters (Driven Side)
-│   │   ├── postgres_wallet_repo.go         # PostgreSQL Adapter Implementation
-│   │   ├── redis_cache.go                  # Redis Adapter Implementation
-│   │   ├── mongo_transaction_repo.go       # MongoDB Adapter Implementation
-│   │   ├── kafka_publisher.go              # Kafka Producer Implementation
-│   │   ├── kafka_consumer.go               # Kafka Consumer Impelementation
-│   │   ├── midtrans_gateway.go             # Midtrans Payment Adapter Implementation
-│   │   ├── doku_gateway.go                 # Doku Payment Adapter Implementation
-│   │   ├── stripe_gateway.go               # Stripe Payment Adapter Implementation
+│   │   ├── persistence/                    # Database adapters
+│   │   │   ├── wallet_repository.go        # WalletRepository implementation
+│   │   │   ├── user_repository.go          # UserRepository implementation
+│   │   │   ├── transaction_repository.go   # TransactionRepository implementation
+│   │   │   └── payment_repository.go       # PaymentRepository implementation
+│   │   ├── cache/
+│   │   │   └── redis_cache.go              # RedisCache implementation
+│   │   ├── messaging/
+│   │   │   ├── event_publisher.go          # KafkaEventPublisher implementation
+│   │   │   └── event_consumer.go           # KafkaEventConsumer implementation
+│   │   ├── payment/
+│   │   │   ├── midtrans_gateway.go         # MidtransGateway implementation
+│   │   │   ├── doku_gateway.go             # DokuGateway implementation
+│   │   │   └── stripe_gateway.go           # StripeGateway implementation
+│   │   └── config/
+│   │       └── viper_config.go             # ViperConfig implementation
 │
 ├── migrations/                             #🗄️Infrastructure (DB Schema Management)
 │   ├── 001_create_wallets.up.sql
