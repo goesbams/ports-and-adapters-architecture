@@ -152,3 +152,49 @@ func (s *WalletService) GetWalletsByUserID(ctx context.Context, userID int) ([]*
 
 	return wallets, nil
 }
+
+// UpdateWalletStatus updates the status of a wallet
+func (s *WalletService) UpdateWalletStatus(ctx context.Context, walletID int, status domain.WalletStatus) error {
+	// Get the wallet first to verify it exists
+	wallet, err := s.walletRepo.FindByID(ctx, walletID)
+	if err != nil {
+		return fmt.Errorf("failed to find wallet: %w", err)
+	}
+
+	if wallet == nil {
+		return ErrWalletNotFound
+	}
+
+	// Update the status
+	err = s.walletRepo.UpdateStatus(ctx, walletID, status)
+	if err != nil {
+		return fmt.Errorf("failed to update wallet status: %w", err)
+	}
+
+	// Invalidate cache
+	if s.cache != nil {
+		cacheKey := fmt.Sprintf("wallet:%d", walletID)
+		_ = s.cache.Delete(ctx, cacheKey)
+	}
+
+	// Publish wallet status updated event
+	event := infrastructure.Event{
+		Type: "wallet.status_updated",
+		Payload: map[string]interface{}{
+			"wallet_id": walletID,
+			"status":    string(status),
+		},
+	}
+
+	// Non-blocking event publishing
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if s.eventPublisher != nil {
+			_ = s.eventPublisher.Publish(ctx, "wallets", event)
+		}
+	}()
+
+	return nil
+}
