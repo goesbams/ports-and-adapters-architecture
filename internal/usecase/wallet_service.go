@@ -198,3 +198,92 @@ func (s *WalletService) UpdateWalletStatus(ctx context.Context, walletID int, st
 
 	return nil
 }
+
+// Deposit adds funds to a wallet
+func (s *WalletService) Deposit(ctx context.Context, walletID int, amount int, description string) (*domain.Transaction, error) {
+	if amount <= 0 {
+		return nil, ErrInvalidAmount
+	}
+
+	// Get wallet
+	wallet, err := s.walletRepo.FindByID(ctx, walletID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find wallet: %w", err)
+	}
+
+	if wallet == nil {
+		return nil, ErrWalletNotFound
+	}
+
+	// Ensure wallet is active
+	if !wallet.IsActive() {
+		return nil, domain.ErrWalletNotActive
+	}
+
+	// Create pending transaction
+	transaction, err := domain.NewTransaction(walletID, domain.TransactionTypeDeposit, amount, description)
+	if err != nil {
+		return nil, err
+	}
+
+	transaction.Status = domain.TransactionStatusPending
+
+	// Save the transaction
+	err = s.transactionRepo.Create(ctx, transaction)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create transaction: %2", err)
+	}
+
+	// Credit the wallet
+	err = wallet.Credit(amount)
+	if err != nil {
+		// Mark transaction as failed
+		transaction.Fail()
+		_ = s.transactionRepo.Update(ctx, transaction)
+	}
+
+	// Update wallet in database
+	err = s.walletRepo.Save(ctx, wallet)
+	if err != nil {
+		// Mark transaction as failed if wallet update fails
+		transaction.Fail()
+		_ = s.transactionRepo.Update(ctx, transaction)
+		return nil, fmt.Errorf("failed to update wallet balance: %w", err)
+	}
+
+	// Mark transaction as completed
+	transaction.Complete()
+	err = s.transactionRepo.Update(ctx, transaction)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update transaction status: %w", err)
+	}
+
+	// Invalidate cache
+	if s.cache != nil {
+		cacheKey := fmt.Sprintf("wallet:%d", walletID)
+		_ = s.cache.Delete(ctx, cacheKey)
+	}
+
+	// Publish deposit event
+	event := infrastructure.Event{
+		Type: "wallet.deposit",
+		Payload: map[string]interface{}{
+			"wallet_id":      wallet.ID,
+			"transaction_id": transaction.ID,
+			"amount":         amount,
+			"new_balance":    wallet.Balance,
+		},
+	}
+
+	// Non-blocking event publishing
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if s.eventPublisher != nil {
+			_ = s.eventPublisher.Publish(ctx, "transactions", event)
+		}
+	}()
+
+	return transaction, nil
+}
