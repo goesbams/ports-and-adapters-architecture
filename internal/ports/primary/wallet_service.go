@@ -1,4 +1,4 @@
-package ports
+package primary
 
 import (
 	"context"
@@ -37,4 +37,7 @@ type WalletService interface {
 		walletID int,
 		limit, offset int,
 	) ([]*domain.Transaction, int, error)
+
+	// GetBalance gets the current balance of a wallet
+	GetBalance(ctx context.Context, walletID int) (int, string, error)
 }
