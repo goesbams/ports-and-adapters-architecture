@@ -132,3 +132,23 @@ func (s *WalletService) GetWallet(ctx context.Context, walletID int) (*domain.Wa
 
 	return wallet, nil
 }
+
+// GetWalletsByUserId retrieves all wallets for a user
+func (s *WalletService) GetWalletsByUserID(ctx context.Context, userID int) ([]*domain.Wallet, error) {
+	// Verify the user exists
+	user, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
+
+	wallets, err := s.walletRepo.FindByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find wallets: %w", err)
+	}
+
+	return wallets, nil
+}

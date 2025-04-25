@@ -14,7 +14,7 @@ type WalletService interface {
 	GetWallet(ctx context.Context, walletID int) (*domain.Wallet, error)
 
 	// GetWalletByUserID retrieves all wallets for a user
-	GetWalletsByUserId(ctx context.Context, userID int) ([]*domain.Wallet, error)
+	GetWalletsByUserID(ctx context.Context, userID int) ([]*domain.Wallet, error)
 
 	// Deposit add funds to a wallet
 	Deposit(ctx context.Context, walletID int, amount int, description string) (*domain.Transaction, error)
