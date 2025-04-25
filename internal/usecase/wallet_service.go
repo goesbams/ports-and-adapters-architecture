@@ -100,3 +100,35 @@ func (s *WalletService) CreateWallet(ctx context.Context, userID int, currencyCo
 
 	return wallet, nil
 }
+
+// GetWallet retrieves a wallet by ID
+func (s *WalletService) GetWallet(ctx context.Context, walletID int) (*domain.Wallet, error) {
+	// Try to get from cache first
+	var wallet *domain.Wallet
+
+	if s.cache != nil {
+		cacheKey := fmt.Sprintf("wallet:%d", walletID)
+		err := s.cache.GetObject(ctx, cacheKey, &wallet)
+		if err == nil && wallet != nil {
+			return wallet, nil
+		}
+	}
+
+	// Fetch from database
+	wallet, err := s.walletRepo.FindByID(ctx, walletID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find wallet: %w", err)
+	}
+
+	if wallet == nil {
+		return nil, ErrWalletNotFound
+	}
+
+	// Cache the wallet for future requests
+	if s.cache != nil {
+		cacheKey := fmt.Sprintf("wallet:%d", walletID)
+		_ = s.cache.SetObject(ctx, cacheKey, wallet, 5*time.Minute)
+	}
+
+	return wallet, nil
+}
