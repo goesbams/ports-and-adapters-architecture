@@ -287,3 +287,95 @@ func (s *WalletService) Deposit(ctx context.Context, walletID int, amount int, d
 
 	return transaction, nil
 }
+
+// Withdraw removes funds from a wallet
+func (s *WalletService) Withdraw(ctx context.Context, walletID int, amount int, description string) (*domain.Transaction, error) {
+	if amount <= 0 {
+		return nil, ErrInvalidAmount
+	}
+
+	// Get wallet
+	wallet, err := s.walletRepo.FindByID(ctx, walletID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find wallet: %w", err)
+	}
+
+	if wallet == nil {
+		return nil, ErrWalletNotFound
+	}
+
+	// Check if wallet has sufficient balance
+	if wallet.Balance < amount {
+		return nil, ErrInsufficientBalance
+	}
+
+	// Create pending transaction
+	transaction, err := domain.NewTransaction(walletID, domain.TransactionTypeWithdrawal, amount, description)
+	if err != nil {
+		return nil, err
+	}
+
+	transaction.Status = domain.TransactionStatusPending
+
+	// Save the transaction
+	err = s.transactionRepo.Create(ctx, transaction)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create transaction: %w", err)
+	}
+
+	// Debit the wallet (will perform additional validation)
+	err = wallet.Debit(amount)
+	if err != nil {
+		// Mark transaction as failed if debit fails
+		transaction.Fail()
+		_ = s.transactionRepo.update(ctx, transaction)
+
+		return nil, err
+	}
+
+	// Update wallet in database
+	err = s.walletRepo.Save(ctx, wallet)
+	if err != nil {
+		// Mark transaction as failed if wallet update fails
+		transaction.Fail()
+		_ = s.transactionRepo.Update(ctx, transaction)
+
+		return nil, fmt.Errorf("failed to update wallet balance: %w", err)
+	}
+
+	// Mark transaction as completed
+	transaction.Complete()
+	err = s.transactionRepo.Update(ctx, transaction)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update transaction: %w", err)
+	}
+
+	// Invalidate cache
+	if s.cache != nil {
+		cacheKey := fmt.Sprintf("wallet:%d", walletID)
+		_ = s.cache.Delete(ctx, cacheKey)
+	}
+
+	// Publish withdrawal event
+	event := infrastructure.Event{
+		Type: "wallet.withdrawal",
+		Payload: map[string]interface{}{
+			"wallet_id":      wallet.ID,
+			"transaction_id": transaction.ID,
+			"amount":         amount,
+			"new_balance":    wallet.Balance,
+		},
+	}
+
+	// Non-blocking event publishing
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if s.eventPublisher != nil {
+			_ = s.eventPublisher.Publish(ctx, "transactions", event)
+		}
+	}()
+
+	return transaction, nil
+}
