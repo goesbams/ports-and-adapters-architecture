@@ -379,3 +379,127 @@ func (s *WalletService) Withdraw(ctx context.Context, walletID int, amount int, 
 
 	return transaction, nil
 }
+
+// Transfer transfers funds from one wallet to another
+func (s *WalletService) Transfer(ctx context.Context, fromWalletID int, toWalletID int, amount int, description string) (*domain.Transaction, error) {
+	if amount <= 0 {
+		return nil, ErrInvalidAmount
+	}
+
+	// Get source wallet
+	fromWallet, err := s.walletRepo.FindByID(ctx, fromWalletID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find source wallet: %w", err)
+	}
+
+	if fromWallet == nil {
+		return nil, ErrWalletNotFound
+	}
+
+	// Get destination wallet
+	toWallet, err := s.walletRepo.FindByID(ctx, toWalletID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find destination wallet: %w", err)
+	}
+
+	if toWallet == nil {
+		return nil, ErrWalletNotFound
+	}
+
+	// Check if wallets have the same currency
+	if fromWallet.CurrencyCode != toWallet.CurrencyCode {
+		return nil, errors.New("cannot transfer between wallets with different currencies")
+	}
+
+	// Create transfer transaction
+	transaction, err := domain.NewTransferTransaction(fromWalletID, toWalletID, amount, description)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save the transaction
+	err = s.transactionRepo.Create(ctx, transaction)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create transaction: %w", err)
+	}
+
+	// Debit from source wallet
+	err = fromWallet.Debit(amount)
+	if err != nil {
+		// Mark transaction as failed if debit fails
+		transaction.Fail()
+		_ = s.transactionRepo.Update(ctx, transaction)
+
+		return nil, err
+	}
+
+	// Credit desitination wallet
+	err = toWallet.Credit(amount)
+	if err != nil {
+		// Mark transaction as failed if credit fails
+		transaction.Fail()
+		_ = s.transactionRepo.Updated(ctx, transaction)
+		return nil, err
+	}
+
+	// Update wallets in database (ideally in a transaction)
+	err = s.walletRepo.Save(ctx, fromWallet)
+	if err != nil {
+		// Mark transaction as failed if source wallet update fails
+		transaction.Fail()
+		_ = s.transactionRepo.Update(ctx, transaction)
+		return nil, fmt.Errorf("failed to update source wallet: %w", err)
+	}
+
+	err = s.walletRepo.Save(ctx, toWallet)
+	if err != nil {
+		// This is a critical error - money has been deducted but not credited
+		// In a real system, this would require more sophisticated recovery
+		transaction.Fail()
+		_ = s.transactionRepo.Update(ctx, transaction)
+
+		// Try to refund the source wallet
+		fromWallet.Credit(amount)
+		_ = s.walletRepo.Save(ctx, fromWallet)
+
+		return nil, fmt.Errorf("failed to update destination wallet: %w", err)
+	}
+
+	// Mark transaction as completed
+	transaction.Complete()
+	err = s.transactionRepo.Update(ctx, transaction)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update transaction status: %w", err)
+	}
+
+	// Invalidate cache for both wallets
+	if s.cache != nil {
+		_ = s.cache.Delete(ctx, fmt.Sprintf("wallet:%d", fromWalletID))
+		_ = s.cache.Delete(ctx, fmt.Sprintf("wallet:%d", toWalletID))
+	}
+
+	// Publish transfer event
+	event := infrastructure.Event{
+		Type: "wallet.transfer",
+		Payload: map[string]interface{}{
+			"transaction_id": transaction.ID,
+			"from_wallet_id": fromWalletID,
+			"to_wallet_id":   toWalletID,
+			"amount":         amount,
+			"from_balance":   fromWallet.Balance,
+			"to_balance":     toWallet.Balance,
+		},
+	}
+
+	// Non-blocking event publishing
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if s.eventPublisher != nil {
+			_ = s.eventPublisher.Publish(ctx, "transactions", event)
+		}
+	}()
+
+	return transaction, nil
+}
