@@ -1,15 +1,4 @@
-## The System
-
-The e-wallet system consists of multiple components:
-
-1. **API Service**: Handles HTTP requests for wallet operations
-2. **Consumer Service**: Processes events from Kafka for background tasks
-3. **Migration Tool**: Manages database schema migrations
-4. **Database**: PostgreSQL for storing wallet and transaction data
-5. **Cache**: Redis for improved performance
-6. **Message Broker**: Kafka for event-driven architecture
-
-These components work together to provide a scalable, event-driven system with clean architecture.# Mini E-Wallet Application
+# Mini E-Wallet Application
 
 This is a Mini E-Wallet application built using Golang with Hexagonal (Ports and Adapters) Architecture. The application provides basic wallet functionality including deposits, withdrawals, and transfers.
 
@@ -44,18 +33,17 @@ Key components:
 
 ## Tech Stack
 
-- **Go 1.24:** Programming language
+- **Go 1.20:** Programming language
 - **Echo:** HTTP web framework
 - **PostgreSQL:** Primary database for wallet and transaction data
 - **Redis:** Caching layer
 - **Kafka:** Event streaming for async processing
-- **Elasticsearch:** (Optional) For logging and analytics
 - **Docker & Docker Compose:** Containerization
 
 ## Prerequisites
 
 - Docker and Docker Compose
-- Go 1.24 or higher (for local development)
+- Go 1.20 or higher (for local development)
 - Make (optional, for using Makefile commands)
 
 ## Getting Started
@@ -114,21 +102,25 @@ The API will be available at http://localhost:8080
 - `POST /api/v1/wallets/:id/withdraw` - Withdraw funds from wallet
 - `POST /api/v1/wallets/:id/transfer` - Transfer funds to another wallet
 - `GET /api/v1/wallets/:id/transactions` - Get transaction history for a wallet
+- `GET /api/v1/wallets/:id/balance` - Get current balance of a wallet
 
 ### Payment Endpoints
 
 - `POST /api/v1/payments/process` - Process a payment
-- `POST /api/v1/payments/verify` - Verify a payment status
+- `GET /api/v1/payments/:id` - Get payment details
+- `POST /api/v1/payments/:id/verify` - Verify a payment status
+- `POST /api/v1/payments/:id/cancel` - Cancel a payment
+- `GET /api/v1/payments/transaction/:transaction_id` - Get all payments for a transaction
 
 ## Configuration
 
 Configuration files are located in the `config` directory:
 
 - `config.yaml` - Base configuration
-- `config.local.yaml` - Local development overrides
-- `config.dev.yaml` - Development environment configuration
-- `config.staging.yaml` - Staging environment configuration
-- `config.prod.yaml` - Production environment configuration
+- `config.local.yaml` - Local development overrides (create as needed)
+- `config.dev.yaml` - Development environment configuration (create as needed)
+- `config.staging.yaml` - Staging environment configuration (create as needed)
+- `config.prod.yaml` - Production environment configuration (create as needed)
 
 The application uses the Viper library to manage configuration, allowing for:
 - Configuration from files
@@ -168,7 +160,3 @@ make migrate-create     # Create a new migration file
    - Create appropriate ports (interfaces) for external dependencies
    - Implement adapters for specific technologies
    - Create REST handlers that use the use cases
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
