@@ -59,6 +59,9 @@ func (w *Wallet) Credit(amount int) error {
 		return ErrInsufficientBalance
 	}
 
+	w.Balance += amount
+	w.UpdatedAt = time.Now()
+
 	return nil
 }
 
