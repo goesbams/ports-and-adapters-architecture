@@ -18,7 +18,7 @@ type Wallet struct {
 	Balance      int          `json:"balance"`
 	CurrencyCode string       `json:"currency_code"`
 	Description  string       `json:"description"`
-	Status       WalletStatus `json:"Status"`
+	Status       WalletStatus `json:"status"`
 	CreatedAt    time.Time    `json:"created_at"`
 	UpdatedAt    time.Time    `json:"updated_at"`
 }
@@ -55,10 +55,7 @@ func (w *Wallet) Credit(amount int) error {
 		return ErrWalletNotActive
 	}
 
-	if w.Balance < amount {
-		return ErrInsufficientBalance
-	}
-
+	// Add funds to balance
 	w.Balance += amount
 	w.UpdatedAt = time.Now()
 
