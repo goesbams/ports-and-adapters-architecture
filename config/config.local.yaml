@@ -1,0 +1,22 @@
+# Local development configuration overrides
+
+server:
+  port: 8080
+
+database:
+  host: localhost
+  port: 5432
+  name: mini_ewallet_dev
+  user: postgres
+  password: postgres
+
+redis:
+  addr: localhost:6379
+
+kafka:
+  brokers:
+    - localhost:9092
+
+logging:
+  level: debug
+  format: text
