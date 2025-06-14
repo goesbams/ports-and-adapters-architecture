@@ -504,3 +504,44 @@ func (s *WalletService) Transfer(ctx context.Context, fromWalletID int, toWallet
 
 	return transaction, nil
 }
+
+// GetTransactionHistory retrieves transaction history for a wallet
+func (s *WalletService) GetTransactionHistory(
+	ctx context.Context,
+	walletID int,
+	limit, offset int,
+) ([]*domain.Transaction, int, error) {
+	// Verify wallet exists
+	wallet, err := s.walletRepo.FindByID(ctx, walletID)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find wallet: %w", err)
+	}
+
+	if wallet == nil {
+		return nil, 0, ErrWalletNotFound
+	}
+
+	// Get transactions
+	transactions, err := s.transactionRepo.FindByWalletID(ctx, walletID, limit, offset)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to find transactions: %w", err)
+	}
+
+	// Get total count
+	totalCount, err := s.transactionRepo.CountByWalletID(ctx, walletID)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to count transactions: %w", err)
+	}
+
+	return transactions, totalCount, nil
+}
+
+// GetBalance gets the current balance of a wallet
+func (s *WalletService) GetBalance(ctx context.Context, walletID int) (int, string, error) {
+	wallet, err := s.GetWallet(ctx, walletID)
+	if err != nil {
+		return 0, "", err
+	}
+
+	return wallet.Balance, wallet.CurrencyCode, nil
+}
