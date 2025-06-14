@@ -1,0 +1,39 @@
+# Production environment configuration overrides
+
+server:
+  port: 8080
+  timeout: 60s
+
+database:
+  host: prod-db.example.com
+  port: 5432
+  name: mini_ewallet_prod
+  user: prod_user
+  password: ${DB_PASSWORD}
+  max_open_conns: 100
+  max_idle_conns: 100
+  conn_max_lifetime: 10m
+
+redis:
+  addr: prod-redis.example.com:6379
+  password: ${REDIS_PASSWORD}
+
+kafka:
+  brokers:
+    - prod-kafka-1.example.com:9092
+    - prod-kafka-2.example.com:9092
+    - prod-kafka-3.example.com:9092
+
+payment:
+  midtrans:
+    server_key: ${MIDTRANS_SERVER_KEY}
+    client_key: ${MIDTRANS_CLIENT_KEY}
+    is_production: true
+  stripe:
+    api_key: ${STRIPE_API_KEY}
+    webhook_secret: ${STRIPE_WEBHOOK_SECRET}
+    is_test: false
+
+logging:
+  level: error
+  format: json
