@@ -1,0 +1,39 @@
+# Base configuration for Mini E-Wallet application
+
+server:
+  port: 8080
+  timeout: 30s
+
+database:
+  host: localhost
+  port: 5432
+  name: mini_ewallet
+  user: postgres
+  password: postgres
+  max_open_conns: 25
+  max_idle_conns: 25
+  conn_max_lifetime: 5m
+
+redis:
+  addr: localhost:6379
+  password: ""
+  db: 0
+
+kafka:
+  brokers:
+    - localhost:9092
+  consumer_group: mini-ewallet
+
+payment:
+  midtrans:
+    server_key: "YOUR_MIDTRANS_SERVER_KEY"
+    client_key: "YOUR_MIDTRANS_CLIENT_KEY"
+    is_production: false
+  stripe:
+    api_key: "YOUR_STRIPE_API_KEY"
+    webhook_secret: "YOUR_STRIPE_WEBHOOK_SECRET"
+    is_test: true
+
+logging:
+  level: info
+  format: json
