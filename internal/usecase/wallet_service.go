@@ -19,6 +19,7 @@ var (
 	ErrTransactionFailed   = errors.New("transaction failed")
 	ErrTransferFailed      = errors.New("transfer failed")
 	ErrWalletAlreadyExists = errors.New("wallet already exists for this user and currency")
+	ErrTransactionNotFound = errors.New("transaction not found")
 )
 
 // WalletService defines the application logic for wallet operations
