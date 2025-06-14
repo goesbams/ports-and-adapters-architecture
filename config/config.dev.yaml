@@ -1,0 +1,33 @@
+# Development environment configuration overrides
+
+server:
+  port: 8080
+
+database:
+  host: dev-db.example.com
+  port: 5432
+  name: mini_ewallet_dev
+  user: dev_user
+  password: ${DB_PASSWORD}
+
+redis:
+  addr: dev-redis.example.com:6379
+  password: ${REDIS_PASSWORD}
+
+kafka:
+  brokers:
+    - dev-kafka-1.example.com:9092
+    - dev-kafka-2.example.com:9092
+
+payment:
+  midtrans:
+    server_key: ${MIDTRANS_SERVER_KEY}
+    client_key: ${MIDTRANS_CLIENT_KEY}
+    is_production: false
+  stripe:
+    api_key: ${STRIPE_API_KEY}
+    webhook_secret: ${STRIPE_WEBHOOK_SECRET}
+    is_test: true
+
+logging:
+  level: debug
