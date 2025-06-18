@@ -329,7 +329,7 @@ func (s *WalletService) Withdraw(ctx context.Context, walletID int, amount int, 
 	if err != nil {
 		// Mark transaction as failed if debit fails
 		transaction.Fail()
-		_ = s.transactionRepo.update(ctx, transaction)
+		_ = s.transactionRepo.Update(ctx, transaction)
 
 		return nil, err
 	}
